@@ -1,13 +1,18 @@
 package com.cooking.course3_recipeApp.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class Ingredient {
     private String ingredientName;
     private int ingredientNum;
     private String unitOfMeasure;
-
+    @Override
+    public String toString() {
+        return ingredientName + " - " + unitOfMeasure + " " + ingredientNum;
+    }
 }

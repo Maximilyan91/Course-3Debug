@@ -1,6 +1,7 @@
 package com.cooking.course3_recipeApp.service.impl;
 
 import com.cooking.course3_recipeApp.exception.ValidationException;
+import com.cooking.course3_recipeApp.model.Ingredient;
 import com.cooking.course3_recipeApp.model.Recipe;
 import com.cooking.course3_recipeApp.service.FileService;
 import com.cooking.course3_recipeApp.service.RecipeService;
@@ -24,16 +25,17 @@ import java.util.Optional;
 public class RecipeServiceImpl implements RecipeService {
 
 
-    private Map<Long, Recipe> recipes = new HashMap<>();
     private static Long id = 0L;
     private final ValidationService validationService;
     private final FileService fileService;
-
+    private Map<Long, Recipe> recipes = new HashMap<>();
     @Value("${path.to.recipes.file}")
     private String recipesFilePath;
 
     @Value("${path.to.recipes.file}")
     private String recipesFileName;
+    @Value("${path.to.recipes.txt.file}")
+    private String recipesTxtFileName;
 
     private Path recipesPath;
 
@@ -83,18 +85,45 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public void uploadFile(MultipartFile file) throws IOException {
         fileService.uploadFile(file, recipesPath);
-        recipes = fileService.readMapFromFile(recipesPath, new TypeReference<HashMap<Long, Recipe>>() {});
+        recipes = fileService.readMapFromFile(recipesPath, new TypeReference<HashMap<Long, Recipe>>() {
+        });
 
+    }
+
+    @Override
+    public File prepareRecipesTxt() throws IOException {
+        return fileService.saveToFile(recipesToString(), Path.of(recipesFilePath, recipesTxtFileName)).toFile();
     }
 
     @PostConstruct
     private void init() {
         recipesPath = Path.of(recipesFilePath, recipesFileName);
-        recipes = fileService.readMapFromFile(recipesPath, new TypeReference<HashMap<Long, Recipe>>() {});
+        recipes = fileService.readMapFromFile(recipesPath, new TypeReference<HashMap<Long, Recipe>>() {
+        });
 
     }
 
+    private String recipesToString() {
+        StringBuilder sb = new StringBuilder();
+        String listEl = " * ";
 
+        for (Recipe recipe : recipes.values()) {
+            sb.append("\n").append(recipe.toString()).append("\n");
+
+            sb.append("\nИнгредиенты:\n");
+
+            for (Ingredient ingredient : recipe.getIngredient()) {
+                sb.append(listEl).append(ingredient.toString()).append("\n");
+            }
+
+            sb.append("\nИнструкция приготовления:\n");
+            for (String step : recipe.getStepsCook()) {
+                sb.append(listEl).append(step).append("\n");
+
+            }
+        }
+        return sb.append("\n").toString();
+    }
 
 
 }
