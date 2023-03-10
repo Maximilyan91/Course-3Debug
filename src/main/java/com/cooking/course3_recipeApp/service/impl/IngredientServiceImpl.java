@@ -2,6 +2,7 @@ package com.cooking.course3_recipeApp.service.impl;
 
 import com.cooking.course3_recipeApp.exception.ValidationException;
 import com.cooking.course3_recipeApp.model.Ingredient;
+import com.cooking.course3_recipeApp.model.Recipe;
 import com.cooking.course3_recipeApp.service.FileService;
 import com.cooking.course3_recipeApp.service.IngredientService;
 import com.cooking.course3_recipeApp.service.ValidationService;
@@ -9,8 +10,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +73,20 @@ public class IngredientServiceImpl implements IngredientService {
     public Map<Long, Ingredient> getAll() {
         return ingredients;
     }
-@PostConstruct
+
+    @Override
+    public File readFile() {
+        return ingredientPath.toFile();
+    }
+
+    @Override
+    public void uploadFile(MultipartFile file) throws IOException {
+        fileService.uploadFile(file, ingredientPath);
+        ingredients = fileService.readMapFromFile(ingredientPath, new TypeReference<HashMap<Long, Ingredient>>() {});
+
+    }
+
+    @PostConstruct
     private void init() {
     ingredientPath = Path.of(ingredientsFilePath, ingredientsFileName);
     ingredients = fileService.readMapFromFile(ingredientPath, new TypeReference<HashMap<Long, Ingredient>>() {});
